@@ -1,6 +1,7 @@
 // const fetch = require('node-fetch')
 const axios = require('axios')
 const fs = require(`fs`)
+const Discord = require('discord.js')
 
 //  reads a txt file
 function readTxt(file, lineNumber){
@@ -21,7 +22,7 @@ function readTxt(file, lineNumber){
 function readSkillXML(text, file) {
     xml2js = require(`xml2js`)
     parser = new xml2js.Parser();
-
+    return 0;
 }
 
 //  translates the information received into plaintext
@@ -31,7 +32,7 @@ function translate(modifiersArray){
         // if statement to check requirement and then translate it to plaintext
         if (modifiersArray[i].hasOwnProperty('requirement')){
             let req = `${modifiersArray[i].requirement}`
-            if (req.contains(`GreaterEqualSkillLv`)){
+            if (req.includes(`GreaterEqualSkillLv`)){
                 temp = req.split(`(`)[1]
                 rank = temp.split(`,`)[1]
                 splitTemp = temp.split(`,`)[0]
@@ -39,7 +40,7 @@ function translate(modifiersArray){
                 txt = readSkillXML(splitTemp)
                 output = output + `When the rank of ${readTxt(`./reference/skillinfo.english.txt`, txt)} is over ${readTxt(`./reference/rank.txt`, splitRank)} `
             }
-            if (req.contains(`LessEqualSkillLv`)){
+            if (req.includes(`LessEqualSkillLv`)){
                 temp = req.split(`(`)[1]
                 rank = temp.split(`,`)[1]
                 splitTemp = temp.split(`,`)[0]
@@ -47,11 +48,15 @@ function translate(modifiersArray){
                 txt = readSkillXML(splitTemp)
                 output = output + `When the rank of ${readTxt(`./reference/skillinfo.english.txt`, txt)} is below ${readTxt(`./reference/rank.txt`, splitRank)} `
             }
-
+            if (i+1 != modifiersArray.length) {
+                output = output + `\n`;
+            }
         }
+        
+        
     }
 
-    return output
+    return output;
 }
 
 module.exports = message => {
@@ -60,7 +65,7 @@ module.exports = message => {
     enchant = inpt.split('!enchant ')[1] // removes the "!enchant " from the message
     
     axios
-    .get(`https://api.mabibase.com/enchants/search?q=name,${enchant}`) // pulls info from mabibase
+    .get(`https://api.mabibase.com/enchants/search?q=name,${enchant}&limit=50`) // pulls info from mabibase
     .then(response => {
         let { data } = response.data // rename response.data to data
         let enchantNames = [] // empty array for enchant names
@@ -68,10 +73,13 @@ module.exports = message => {
         let enchantApplies = [] // empty array for what items the enchant can go on
         let enchantType = [] // empty array for whether enchant is prefix or suffix
 
-        if (data.total > 0) {
+        const embed = new Discord.RichEmbed();
+        
+        if (data.total > 0 && data.total < 6 ) {
             // create results string to output
             results = `
-Enchant search found ${data.total} results for "${enchant}"`
+Enchant search found ${data.total} result(s) for "${enchant}"`
+            embed.setAuthor(results);
             // for loop to create the results string
             for (let i=0; i < data.total; i++) {
                 enchantNames.push(data.enchants[i].enchant_name) //adds the enchant name to array
@@ -106,24 +114,36 @@ Enchant enabled for ${enchantApplies[i]}
 //                     // append to results
 //                      results = results + `${modArgs}
 // `
-                    results = results +`${translate(data.enchants[i].modifiers)}
-`
+                    const modifiers = `${translate(data.enchants[i].modifiers)}`;
+//                    results = results +`${translate(data.enchants[i].modifiers)}\n`
                     //  } // end for loop to append modifiers to results 
 
+                    const otherModifiers = [];
                     if (data.enchants[i].repair_modifier > 0) {
-                        results = results + `Repair cost +${data.enchants[i].repair_modifier}%
-`
+                        // results = results + `Repair cost +${data.enchants[i].repair_modifier}%\n`
+                        otherModifiers.push(`Repair cost +${data.enchants[i].repair_modifier}%`);
                     } // check to see if repair cost is increased
-                    if (data.enchants[i].repair_modifier <0) {
-                        results = results + `Repair cost ${data.enchants[i].repair_modifier}%
-`
+
+                    if (data.enchants[i].repair_modifier < 0) {
+                        // results = results + `Repair cost ${data.enchants[i].repair_modifier}%\n`
+                        otherModifiers.push(`Repair cost ${data.enchants[i].repair_modifier}%`);
                     } // check to see if repair cost is decreased
+
                     if (data.enchants[i].disregard_enchant_rank) {
-                        results = results + `Enchant enabled regardless of rank
-`
+                        // results = results + `Enchant enabled regardless of rank\n`
+                        otherModifiers.push(`Enchant enabled regardless of rank`);
                     } // check to see if enchant enabled rank regardless
+
+                    embed.addField(`${enchantNames[i]} (Rank ${enchantRank[i]}) ${type}`, `
+                    Enchant enabled for ${enchantApplies[i]}
+                    ${modifiers}
+                    ${otherModifiers.join('\n')}
+                    `)
                 } // end for loop to create Results string
-            return message.channel.send(results)
+            // return message.channel.send(results)
+            return message.channel.send({embed});
+        } else if (data.total > 5) {
+            return message.channel.send(`Enchant search for "${enchant}" yielded more than 5 results. Please refine your search and try again.`) // if more than 5 results, try again
         } else return message.channel.send(`No results found for "${enchant}"`) //outputs if no enchant found
 
 
