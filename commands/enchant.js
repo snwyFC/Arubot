@@ -1,26 +1,57 @@
 // const fetch = require('node-fetch')
 const axios = require('axios')
+const fs = require(`fs`)
 
-//function to change ranks to in game values
-function realRank(rank) {
-    if (rank === 18) return 'Dan 3'
-    if (rank === 17) return 'Dan 2'
-    if (rank === 16) return 'Dan 1'
-    if (rank === 15) return '1'
-    if (rank === 14) return '2'
-    if (rank === 13) return '3'
-    if (rank === 12) return '4'
-    if (rank === 11) return '5'
-    if (rank === 10) return '6'
-    if (rank === 9) return '7'
-    if (rank === 8) return '8'
-    if (rank === 7) return '9'
-    if (rank === 6) return 'A'
-    if (rank === 5) return 'B'
-    if (rank === 4) return 'C'
-    if (rank === 3) return 'D'
-    if (rank === 2) return 'E'
-    if (rank === 1) return 'F'
+//  reads a txt file
+function readTxt(file, lineNumber){
+    var value = [];
+
+    var lines = require('fs').readFileSync(file, 'utf-8')
+    .split('\n');
+
+    for (i = 0; i < lines.length; i++) {
+        splitLine = lines[i].split("\t");
+        if (splitLine[0] === lineNumber.toString()) {
+            return splitLine[1].replace(/(\r\n|\n|\r)/gm, "");
+        }
+    }
+}
+
+//  read skill xml file
+function readSkillXML(text, file) {
+    xml2js = require(`xml2js`)
+    parser = new xml2js.Parser();
+
+}
+
+//  translates the information received into plaintext
+function translate(modifiersArray){
+    output = ''
+    for (let i = 0; i < modifiersArray.length; i++){
+        // if statement to check requirement and then translate it to plaintext
+        if (modifiersArray[i].hasOwnProperty('requirement')){
+            let req = `${modifiersArray[i].requirement}`
+            if (req.contains(`GreaterEqualSkillLv`)){
+                temp = req.split(`(`)[1]
+                rank = temp.split(`,`)[1]
+                splitTemp = temp.split(`,`)[0]
+                splitRank = rank.split(`)`)[0]
+                txt = readSkillXML(splitTemp)
+                output = output + `When the rank of ${readTxt(`./reference/skillinfo.english.txt`, txt)} is over ${readTxt(`./reference/rank.txt`, splitRank)} `
+            }
+            if (req.contains(`LessEqualSkillLv`)){
+                temp = req.split(`(`)[1]
+                rank = temp.split(`,`)[1]
+                splitTemp = temp.split(`,`)[0]
+                splitRank = rank.split(`)`)[0]
+                txt = readSkillXML(splitTemp)
+                output = output + `When the rank of ${readTxt(`./reference/skillinfo.english.txt`, txt)} is below ${readTxt(`./reference/rank.txt`, splitRank)} `
+            }
+
+        }
+    }
+
+    return output
 }
 
 module.exports = message => {
@@ -44,7 +75,7 @@ Enchant search found ${data.total} results for "${enchant}"`
             // for loop to create the results string
             for (let i=0; i < data.total; i++) {
                 enchantNames.push(data.enchants[i].enchant_name) //adds the enchant name to array
-                enchantRank.push(realRank(data.enchants[i].rank)) // adds the enchant rank to array after running it through the above function
+                enchantRank.push(readTxt(`./reference/rank.txt`,data.enchants[i].rank)) // adds the enchant rank to array after converting the rank from the text file
                 enchantApplies.push(data.enchants[i].applied_on) // adds to the array for item type allowed
                 enchantType.push(data.enchants[i].type) // adds to array for prefix/suffix
                 type = ''
@@ -59,23 +90,25 @@ __**${enchantNames[i]} (Rank ${enchantRank[i]})**__  ${type}
 Enchant enabled for ${enchantApplies[i]}
 `
                  //for loop to append modifiers to results
-                 for (let j=0; j < data.enchants[i].modifiers.length; j++){
+                //  for (let j=0; j < data.enchants[i].modifiers.length; j++){
                      // check modifier arguments
                      // check to see if requirement and append to result if true
-                     if (data.enchants[i].modifiers[j].requirement){
-                         results = results +`If ${data.enchants[i].modifiers[j].requirement}
- `
-                     }
-                     let modifierArguments = []
-                     let modArgs = `` // string for the modifier arguments
-                     for (let k=0; k < data.enchants[i].modifiers[j].effect.arguments.length; k++){
-                         modifierArguments.push(data.enchants[i].modifiers[j].effect.arguments[k]) // add modifier lines to array
-                          modArgs = modArgs + `${modifierArguments[k]} `
-                      }
-                    // append to results
-                     results = results + `${modArgs}
+//                      if (data.enchants[i].modifiers[j].requirement){
+//                          results = results +`If ${data.enchants[i].modifiers[j].requirement}
+//  `
+//                      }
+//                      let modifierArguments = []
+//                      let modArgs = `` // string for the modifier arguments
+//                      for (let k=0; k < data.enchants[i].modifiers[j].effect.arguments.length; k++){
+//                          modifierArguments.push(data.enchants[i].modifiers[j].effect.arguments[k]) // add modifier lines to array
+//                           modArgs = modArgs + `${modifierArguments[k]} `
+//                       }
+//                     // append to results
+//                      results = results + `${modArgs}
+// `
+                    results = results +`${translate(data.enchants[i].modifiers)}
 `
-                     } // end for loop to append modifiers to results 
+                    //  } // end for loop to append modifiers to results 
 
                     if (data.enchants[i].repair_modifier > 0) {
                         results = results + `Repair cost +${data.enchants[i].repair_modifier}%
@@ -90,8 +123,8 @@ Enchant enabled for ${enchantApplies[i]}
 `
                     } // check to see if enchant enabled rank regardless
                 } // end for loop to create Results string
-            return message.reply(results)
-        } else return message.reply(`No results found for "$enchant"`) //outputs if no enchant found
+            return message.channel.send(results)
+        } else return message.channel.send(`No results found for "${enchant}"`) //outputs if no enchant found
 
 
     })
