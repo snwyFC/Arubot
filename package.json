@@ -9,7 +9,7 @@
   },
   "author": "Arueksu",
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.19.0",
     "discord.js": "^11.5.0",
     "dotenv": "^8.0.0",
     "node-fetch": "^2.6.0",

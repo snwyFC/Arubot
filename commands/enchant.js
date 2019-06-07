@@ -4,88 +4,122 @@ const fs = require(`fs`);
 const Discord = require('discord.js');
 const xml2js = require('xml2js');
 
+const { days, statNames, conditions, ranks } = require('../reference/map')
+
 const SEARCH_URL = 'https://api.mabibase.com/enchants/search?q=name,';
-const NAME_URL = 'https://api.mabibase.com/name/skill';
+const SKILL_URL = 'https://api.mabibase.com/name/skill';
+const TITLE_URL = 'https://api.mabibase.com/name/title';
 
-//  reads a txt file
-const readTxt = (file, lineNumber) => {
-    let lines = fs.readFileSync(file, 'utf16le').split('\n');
+const fetchSkillName = async (id) => {
+    const { data: { data: skillName } } = await axios.get(`${SKILL_URL}/${id}`);
 
-    return lines
-    .map(line => line.split(`\t`))
-    .find(line =>  line[0] === lineNumber.toString())[1]
-    .replace(/(\r\n|\n|\r)/gm, "");
+    return skillName;
 };
 
-//  first convert xml to json
-//  read skill xml file
-const readSkillXML = (text) => {
+const fetchTitleName = async (id) => {
+    const { data: { data: title } } = await axios.get(`${TITLE_URL}/${id}`);
 
-    let rawData = fs.readFileSync('./reference/skillinfo.json');
-    let skills = JSON.parse(rawData);
-
-    let selectedSkill = skills['SkillInfo']['SkillList']['Skill'].find((skill) => {
-        return skill['-SkillID'] === text;
-    })
-
-    let skillID = selectedSkill['-SkillLocalName'].match(/[0-9]+/g)[0];
-    console.log(skillID);
-    return skillID;
+    return title;
 };
 
 //  translates the information received into plaintext
-const translate = (modifiersArray) => {
+const translate = async (modifiersArray) => {
     let output = '';
 
-    modifiersArray.forEach((modifier) => {
+    for (const modifier of modifiersArray) {
         // if statement to check requirement and then translate it to plaintext
-        if (modifier.hasOwnProperty('requirement')){
-            let req = `${modifier.requirement}`;
+        if (modifier.hasOwnProperty('requirement')) {
+            let req = modifier.requirement;
 
             // if requirement requires you to have a skill above or equal to specified rank
             if (req.includes(`GreaterEqualSkillLv`)){
-                temp = req.split(`(`)[1];
-                rank = temp.split(`,`)[1];
-                splitTemp = temp.split(`,`)[0];
-                splitRank = rank.split(`)`)[0];
-                console.log(splitTemp);
-                skill = readSkillXML(splitTemp);
-                output += `If ${readTxt(`./reference/skillinfo.english.txt`, skill)} is Rank ${readTxt(`./reference/rank.txt`, splitRank)} or higher `;
+                let temp = req.split(`(`)[1];
+                let rank = temp.split(`,`)[1];
+                let splitTemp = temp.split(`,`)[0];
+                let splitRank = rank.split(`)`)[0].trim();
+
+                let skill = await fetchSkillName(splitTemp);
+
+                output += `If ${skill} is Rank ${ranks[splitRank]} or higher `;
             }
 
             // if requirement requires you to have a skill below or equal to specified rank
             if (req.includes(`LessEqualSkillLv`)){
-                temp = req.split(`(`)[1];
-                rank = temp.split(`,`)[1];
-                splitTemp = temp.split(`,`)[0];
-                splitRank = rank.split(`)`)[0];
-                skill = readSkillXML(splitTemp);
-                output += `If ${readTxt(`./reference/skillinfo.english.txt`, skill)} is Rank ${readTxt(`./reference/rank.txt`, splitRank)} or lower `;
+                let temp = req.split(`(`)[1];
+                let rank = temp.split(`,`)[1];
+                let splitTemp = temp.split(`,`)[0];
+                let splitRank = rank.split(`)`)[0].trim();
+
+                let skill = await fetchSkillName(splitTemp);
+
+                output += `If ${skill} is Rank ${ranks[splitRank]} or lower `;
             }
 
             // if requirement is to be wearing a title
             if (req.includes(`UsingTitle`)) {
-                temp = req.split(`(`)[1];
-                splitTemp = temp.split(`)`)[0];
-                title = readTitleXML(splitTemp);
-                output += `While holding the ${readTxt(`./reference/title.english.txt`, title)} title `
+                let temp = req.split(`(`)[1];
+                let titleID = temp.split(`)`)[0];
+
+                let title = await fetchTitleName(titleID);
+
+                output += `While holding the ${title} title `
+            }
+
+            else if(req.includes('IsInCondition')) {
+                let temp = req.split(`(`)[1];
+                let conditionID = temp.split(`)`)[0];
+
+                output += `While in the state of ${conditions[conditionID]} `;
+            }
+
+            else if(req.includes('IsTodayMonth')) {
+                let temp = req.split(`(`)[1];
+                let today = temp.split(`)`)[0];
+
+                output += `During ${days[today]} `;
             }
 
             // if requirement involves levels
-            if (req.includes(`level`)) {
-                lvl = req.split(`=`)[1];
+            else if (req.includes(`level`)) {
+                const lvl = req.split(`=`)[1];
+
                 if (req.includes(`>=`)) {
-                    output += `When Level is ${lvl} or higher`
+                    output += `When Level is ${lvl} or higher `
                 } 
                 if (req.includes(`<=`)) {
-                    output += `When Level is ${lvl} or below`
+                    output += `When Level is ${lvl} or below `
                 }
             }
-
-            output += `\n`;
         }
-    });
 
+        const effect = modifier.effect;
+
+        switch(effect.function) {
+            // Stat increase
+            case 'setparamonequip': {
+                let [ statName, statNumber ] = effect.arguments;
+                let statDiff = (statNumber[0] === '-') ? '' : '+';
+                // Strip parens from statNumber if there is any
+                statNumber = (statNumber.includes(')')) ?  statNumber.replace(/[()]/g, '') : statNumber;
+
+                output += `${statNames[statName]} ${statDiff}${statNumber}`;
+                break;
+            }
+
+            case 'setpersonalize': {
+                output += '***Personalize***'
+                break;
+            }
+
+            default: {
+                output += `Undefined behavior on **${effect.function}**`
+            }
+        }
+
+        if(modifiersArray.length !== 1 && modifier !== modifiersArray[modifiersArray.length-1]) {
+            output += '\n';
+        }
+    };
     return output;
 };
 
@@ -111,25 +145,25 @@ module.exports = async (message) => {
         // for loop to create the results string
         for (let i=0; i < data.total; i++) {
             enchantNames.push(data.enchants[i].enchant_name) //adds the enchant name to array
-            enchantRank.push(readTxt(`./reference/rank.txt`,data.enchants[i].rank)) // adds the enchant rank to array after converting the rank from the text file
+            enchantRank.push(ranks[data.enchants[i].rank]) // adds the enchant rank to array after converting the rank from the text file
             enchantApplies.push(data.enchants[i].applied_on) // adds to the array for item type allowed
             enchantType.push(data.enchants[i].type) // adds to array for prefix/suffix
 
             let type = (enchantType[i] === 0) ? `(Prefix)` : `(Suffix)`;
 
-            const modifiers = `${translate(data.enchants[i].modifiers)}`;
+            const modifiers = await translate(data.enchants[i].modifiers);
 
             // Filled with strings of modifiers that are not specific 
             const otherModifiers = [];
 
             // Repair Cost increase
             if (data.enchants[i].repair_modifier > 0) {
-                otherModifiers.push(`Repair cost +${data.enchants[i].repair_modifier}%`);
+                otherModifiers.push(`+${data.enchants[i].repair_modifier}% Repair Cost`);
             }
 
             // Repair Cost decreased
             if (data.enchants[i].repair_modifier < 0) {
-                otherModifiers.push(`Repair cost ${data.enchants[i].repair_modifier}%`);
+                otherModifiers.push(`${data.enchants[i].repair_modifier}% Repair Cost`);
             }
 
             // Enchant enabled regardless
@@ -137,11 +171,16 @@ module.exports = async (message) => {
                 otherModifiers.push(`Enchant enabled regardless of rank`);
             }
 
+            const otherModifiersText = (otherModifiers.length === 0) ? '' : otherModifiers.join('\n') + '\n';
+
             embed.addField(`${enchantNames[i]} (Rank ${enchantRank[i]}) ${type}`, `
-                Enchant enabled for ${enchantApplies[i]}
-                ${modifiers}
-                ${otherModifiers.join('\n')}
-            `);
+                    Enchant enabled for ${enchantApplies[i]}
+                    ${modifiers} 
+                ` + 
+                `${otherModifiersText}` +
+                `${(i+1 !== data.total) ? '\u200B' : ''}`
+            );
+
         }
         return message.channel.send({embed});
 
