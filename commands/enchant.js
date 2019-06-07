@@ -1,26 +1,36 @@
 // const fetch = require('node-fetch')
-const axios = require('axios')
-const fs = require(`fs`)
-const Discord = require('discord.js')
+const axios = require('axios');
+const fs = require(`fs`);
+const Discord = require('discord.js');
 const xml2js = require('xml2js');
+
+const SEARCH_URL = 'https://api.mabibase.com/enchants/search?q=name,';
+const NAME_URL = 'https://api.mabibase.com/name/skill';
 
 //  reads a txt file
 const readTxt = (file, lineNumber) => {
-    let lines = require('fs').readFileSync(file, 'utf-8').split('\n');
+    let lines = fs.readFileSync(file, 'utf16le').split('\n');
 
-    lines.forEach((line) => {
-        splitLine = line.split("\t");
-        if (splitLine[0] === lineNumber.toString()) {
-            return splitLine[1].replace(/(\r\n|\n|\r)/gm, "");
-        }
-    });
+    return lines
+    .map(line => line.split(`\t`))
+    .find(line =>  line[0] === lineNumber.toString())[1]
+    .replace(/(\r\n|\n|\r)/gm, "");
 };
 
+//  first convert xml to json
 //  read skill xml file
-const readSkillXML = (text, file) => {
-    const parser = new xml2js.Parser();
+const readSkillXML = (text) => {
 
-    return 0;
+    let rawData = fs.readFileSync('./reference/skillinfo.json');
+    let skills = JSON.parse(rawData);
+
+    let selectedSkill = skills['SkillInfo']['SkillList']['Skill'].find((skill) => {
+        return skill['-SkillID'] === text;
+    })
+
+    let skillID = selectedSkill['-SkillLocalName'].match(/[0-9]+/g)[0];
+    console.log(skillID);
+    return skillID;
 };
 
 //  translates the information received into plaintext
@@ -32,22 +42,44 @@ const translate = (modifiersArray) => {
         if (modifier.hasOwnProperty('requirement')){
             let req = `${modifier.requirement}`;
 
+            // if requirement requires you to have a skill above or equal to specified rank
             if (req.includes(`GreaterEqualSkillLv`)){
                 temp = req.split(`(`)[1];
                 rank = temp.split(`,`)[1];
                 splitTemp = temp.split(`,`)[0];
                 splitRank = rank.split(`)`)[0];
-                txt = readSkillXML(splitTemp);
-                output += `When the rank of ${readTxt(`./reference/skillinfo.english.txt`, txt)} is over ${readTxt(`./reference/rank.txt`, splitRank)}`;
+                console.log(splitTemp);
+                skill = readSkillXML(splitTemp);
+                output += `If ${readTxt(`./reference/skillinfo.english.txt`, skill)} is Rank ${readTxt(`./reference/rank.txt`, splitRank)} or higher `;
             }
 
+            // if requirement requires you to have a skill below or equal to specified rank
             if (req.includes(`LessEqualSkillLv`)){
                 temp = req.split(`(`)[1];
                 rank = temp.split(`,`)[1];
                 splitTemp = temp.split(`,`)[0];
                 splitRank = rank.split(`)`)[0];
-                txt = readSkillXML(splitTemp);
-                output += `When the rank of ${readTxt(`./reference/skillinfo.english.txt`, txt)} is below ${readTxt(`./reference/rank.txt`, splitRank)}`;
+                skill = readSkillXML(splitTemp);
+                output += `If ${readTxt(`./reference/skillinfo.english.txt`, skill)} is Rank ${readTxt(`./reference/rank.txt`, splitRank)} or lower `;
+            }
+
+            // if requirement is to be wearing a title
+            if (req.includes(`UsingTitle`)) {
+                temp = req.split(`(`)[1];
+                splitTemp = temp.split(`)`)[0];
+                title = readTitleXML(splitTemp);
+                output += `While holding the ${readTxt(`./reference/title.english.txt`, title)} title `
+            }
+
+            // if requirement involves levels
+            if (req.includes(`level`)) {
+                lvl = req.split(`=`)[1];
+                if (req.includes(`>=`)) {
+                    output += `When Level is ${lvl} or higher`
+                } 
+                if (req.includes(`<=`)) {
+                    output += `When Level is ${lvl} or below`
+                }
             }
 
             output += `\n`;
@@ -62,7 +94,7 @@ module.exports = async (message) => {
     let enchant = inpt.split('!enchant ')[1] // removes the "!enchant " from the message
 
     // pulls info from mabibase
-    const response = await axios.get(`https://api.mabibase.com/enchants/search?q=name,${enchant}&limit=50`);
+    const response = await axios.get(`https://api.mabibase.com/enchants/search?q=name,${enchant}&limit=5`);
 
     let { data } = response.data // rename response.data to data
     let enchantNames = [] // empty array for enchant names
@@ -84,11 +116,6 @@ module.exports = async (message) => {
             enchantType.push(data.enchants[i].type) // adds to array for prefix/suffix
 
             let type = (enchantType[i] === 0) ? `(Prefix)` : `(Suffix)`;
-
-            results = results + `
-                __**${enchantNames[i]} (Rank ${enchantRank[i]})**__  ${type}
-                Enchant enabled for ${enchantApplies[i]}
-            `;
 
             const modifiers = `${translate(data.enchants[i].modifiers)}`;
 
