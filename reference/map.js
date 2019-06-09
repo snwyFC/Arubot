@@ -19,6 +19,9 @@ const statNames = {
     'will': 'Will',
     'luck': 'Luck',
     'defence' : 'Defense',
+    'shockcancellation_def' : 'Defense',
+    'magicdefense' : 'Magic Defense',
+    'shockcancellation_magicdefence' : 'Magic Defense',
     'prot' : 'Protection',
     'attmin': 'Min Damage',
     'attmax': 'Max Damage',
@@ -28,7 +31,6 @@ const statNames = {
     'wattmax' : 'Max Injury',
     'wattmin' : 'Min Injury',
     'magicattack' : 'Magic Attack',
-    'magicdefense' : 'Magic Defense',
     'musicbuff_bonus' : 'Music Buff Effect',
     'musicbuff_duration' : 'Music Buff Duration',
     'alchemy_water' : 'Water Alchemy Damage',
@@ -59,6 +61,7 @@ const statNames = {
     'combatpower' : 'Combat Power',
     'product_quality_bonus' : 'Production Quality',
     'lance_piercing' : 'Piercing Level',
+    'timewarp_count' : 'Time Shift Cooldown Ignore Count',
 };
 
 const conditions = {
