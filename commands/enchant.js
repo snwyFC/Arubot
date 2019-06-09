@@ -4,7 +4,7 @@ const fs = require(`fs`);
 const Discord = require('discord.js');
 const xml2js = require('xml2js');
 
-const { days, statNames, conditions, ranks } = require('../reference/map')
+const { days, statNames, conditions, ranks } = require('../reference/map');
 
 const SEARCH_URL = 'https://api.mabibase.com/enchants/search?q=name,';
 const SKILL_URL = 'https://api.mabibase.com/name/skill';
