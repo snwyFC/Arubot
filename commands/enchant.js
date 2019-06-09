@@ -96,6 +96,7 @@ const translate = async (modifiersArray) => {
 
         switch(effect.function) {
             // Stat increase
+            case 'setsetitemeffectonequip':
             case 'setparamonequip': {
                 let [ statName, statNumber ] = effect.arguments;
                 let statDiff = (statNumber[0] === '-') ? '' : '+';
