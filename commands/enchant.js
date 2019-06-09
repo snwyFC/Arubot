@@ -106,6 +106,16 @@ const translate = async (modifiersArray) => {
                 break;
             }
 
+            case 'setitemoption': {
+                let [ statName, statNumber ] = effect.arguments;
+                let statDiff = (statNumber[0] === '-') ? '' : '+';
+                // Strip parens from statNumber if there is any
+                statNumber = (statNumber.includes(')')) ?  statNumber.replace(/[()]/g, '') : statNumber;
+                
+                output += `${statNames[statName]} ${statDiff}${statNumber}`;
+                break;
+            }
+
             case 'setpersonalize': {
                 output += '***Personalize***'
                 break;
