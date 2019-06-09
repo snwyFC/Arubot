@@ -114,12 +114,15 @@ module.exports = {
 
     changeRaidChannel: (message) => {
         const inpt = message.content // the message/command issued by the user
-        const channel = inpt.split(' ')[1] // removes the "!enchant " from the message
+        const channelName = inpt.split(' ')[1] // removes the "!enchant " from the message
+        const channel = message.guild.channels.find(channel => channel.name === channelName);
 
-        raidChannel = channel;
+        if (channel) {
+            raidChannel = channel;
 
-        const channelName = message.guild.channels.find(channel => channel.name === raidChannel).toString();
-
-        return message.reply (`Changed raid channel to ${channelName}`);
+            return message.reply (`Changed raid channel to ${channel.toString()}`);
+        } else {
+            return message.reply('Channel not found!');
+        }
     },
 }
