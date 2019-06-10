@@ -1,99 +1,31 @@
-const cron = require('node-cron');
+const CronJob = require('cron').CronJob;
 
 let raidChannel = null;
 
+const TIMERS = [
+    ['0 0 11 * * *', 'Black Dragon is spawning!'],
+    ['0 0 19 * * *', 'Black Dragon is spawning!'],
+    ['0 30 11 * * *', 'White Dragon is spawning!'],
+    ['0 30 19 * * *', 'White Dragon is spawning!'],
+    ['0 30 10 * * *', 'Desert Dragon is spawning!'],
+    ['0 0 17 * * *', 'Desert Dragon is spawning!'],
+    ['0 0 15 * * *', 'Prairie Dragon is spawning!'],
+    ['0 0 19 * * *', 'Prairie Dragon is spawning!'],
+    ['0 0 16 * * *', 'Red Dragon is spawning!'],
+    ['0 0 21 * * *', 'Red Dragon is spawning!'],
+    ['0 0 10 * * *', 'Sandworm is spawning!'],
+    ['0 0 23 * * *', 'Sandworm is spawning!'],
+    ['0 0 15 * * *', 'Alligator is spawning!'],
+    ['0 0 18 * * *', 'Alligator is spawning!'],
+];
+
 module.exports = {
     timers: (client) => {
-        // Black Dragon 
-        // BD Morning Time
-        cron.schedule('* 11 * * *', () => {
-            raidChannel.send('@here Black Dragon is spawning!');
+        TIMERS.forEach(([ time, message ]) => {
+            new CronJob(time, () => {
+                raidChannel.send(message);
+            }, null, true, 'America/Los_Angeles');
         });
-
-        // BD Evening Time
-        cron.schedule('* 19 * * *', () => {
-            raidChannel.send('@here Black Dragon is spawning!');
-        });
-
-        // -----------------------------
-
-        // White Dragon
-        // WD Morning Time
-        cron.schedule('30 11 * * *', () => {
-            raidChannel.send('@here White Dragon is spawning!');
-        });
-
-        // WD Evening Time
-        cron.schedule('30 19 * * *', () => {
-            raidChannel.send('@here White Dragon is spawning!');
-        });
-
-        // -----------------------------
-
-        // Desert Dragon
-        // DD Morning Time
-        cron.schedule('30 10 * * *', () => {
-            raidChannel.send('@here Desert Dragon is spawning!');
-        });
-
-        // DD Evening Time
-        cron.schedule('0 17 * * *', () => {
-            raidChannel.send('@here Desert Dragon is spawning!');
-        });
-
-        // -----------------------------
-
-        // Prairie Dragon
-        // PD Morning Time
-        cron.schedule('0 15 * * *', () => {
-            raidChannel.send('@here Prairie Dragon is spawning!');
-        });
-
-        // PD Evening Time
-        cron.schedule('0 19 * * *', () => {
-            raidChannel.send('@here Prairie Dragon is spawning!');
-        });
-
-        // -----------------------------
-
-        // Red Dragon
-        // RD Morning Time
-        cron.schedule('0 16 * * *', () => {
-            raidChannel.send('@here Red Dragon is spawning!');
-        });
-
-        // RD Evening Time
-        cron.schedule('0 21 * * *', () => {
-            raidChannel.send('@here Red Dragon is spawning!');
-        });
-
-        // -----------------------------
-
-        // Sandworm
-        // Sandworm Morning Time
-        cron.schedule('0 10 * * *', () => {
-            raidChannel.send('@here Sandworm is spawning!');
-        });
-
-        // Sandworm Evening Time
-        cron.schedule('0 23 * * *', () => {
-            raidChannel.send('@here Sandworm is spawning!');
-        });
-
-        // -----------------------------
-
-        // Alligator
-        // Alligator Morning Time
-        cron.schedule('0 15 * * *', () => {
-            raidChannel.send('@here Alligator is spawning!');
-        });
-
-        // Alligator Evening Time
-        cron.schedule('0 18 * * *', () => {
-            raidChannel.send('@here Alligator is spawning!');
-        });
-
-        // -----------------------------
     },
 
     changeRaidChannel: (message) => {
