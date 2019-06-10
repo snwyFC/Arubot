@@ -1,6 +1,7 @@
 const ping = require('../commands/ping');
 const wiki = require('../commands/wiki.js');
 const enchant = require('../commands/enchant');
+const help = require('../commands/help');
 const { changeRaidChannel } = require('../commands/timers');
 
 // TODO: Use database to store whitelist
@@ -22,6 +23,10 @@ module.exports = {
 
         if (message.content.startsWith('!wiki ')) {
             return await wiki(message);
+        }
+
+        if (message.content.startsWith('!help')) {
+            return help(message);
         }
 
         if (message.content.startsWith('!raid')) {
