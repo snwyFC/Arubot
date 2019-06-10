@@ -1,6 +1,7 @@
 const ping = require('../commands/ping');
 const wiki = require('../commands/wiki.js');
 const enchant = require('../commands/enchant');
+const item = require('../commands/item.js');
 const help = require('../commands/help');
 const { changeRaidChannel } = require('../commands/timers');
 
@@ -19,6 +20,10 @@ module.exports = {
 
         if (message.content.startsWith('!enchant')) {
             return await enchant(message);
+        }
+
+        if (message.content.startsWith('!item ')) {
+            return await item(message);
         }
 
         if (message.content.startsWith('!wiki ')) {
