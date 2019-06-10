@@ -3,20 +3,20 @@ const CronJob = require('cron').CronJob;
 let raidChannel = null;
 
 const TIMERS = [
-    ['0 0 11 * * *', 'Black Dragon is spawning!'],
-    ['0 0 19 * * *', 'Black Dragon is spawning!'],
-    ['0 30 11 * * *', 'White Dragon is spawning!'],
-    ['0 30 19 * * *', 'White Dragon is spawning!'],
-    ['0 30 10 * * *', 'Desert Dragon is spawning!'],
-    ['0 0 17 * * *', 'Desert Dragon is spawning!'],
-    ['0 0 15 * * *', 'Prairie Dragon is spawning!'],
-    ['0 0 19 * * *', 'Prairie Dragon is spawning!'],
-    ['0 0 16 * * *', 'Red Dragon is spawning!'],
-    ['0 0 21 * * *', 'Red Dragon is spawning!'],
+    ['0 0 11 * * *', 'Black Dragon is spawning for the next 15 minutes!'],
+    ['0 0 19 * * *', 'Black Dragon is spawning for the next 15 minutes!'],
+    ['0 30 11 * * *', 'White Dragon is spawning for the next 15 minutes!'],
+    ['0 30 19 * * *', 'White Dragon is spawning for the next 15 minutes!'],
+    ['0 30 10 * * *', 'Desert Dragon is spawning for the next 30 minutes!'],
+    ['0 0 17 * * *', 'Desert Dragon is spawning for the next 30 minutes!'],
+    ['0 0 15 * * *', 'Prairie Dragon is spawning for the next 30 minutes!'],
+    ['0 0 19 * * *', 'Prairie Dragon is spawning for the next 30 minutes!'],
+    ['0 0 16 * * *', 'Red Dragon is spawning for the next 30 minutes!'],
+    ['0 0 21 * * *', 'Red Dragon is spawning for the next 30 minutes!'],
     ['0 0 10 * * *', 'Sandworm is spawning!'],
-    ['0 0 23 * * *', 'Sandworm is spawning!'],
-    ['0 0 15 * * *', 'Alligator is spawning!'],
-    ['0 0 18 * * *', 'Alligator is spawning!'],
+    ['0 0 23 * * *', 'Sandworm is spawning for the next 30 minutes!'],
+    ['0 0 15 * * *', 'Giant Alligator is spawning for the next 30 minutes!'],
+    ['0 0 18 * * *', 'Giant Alligator is spawning for the next 30 minutes!'],
 ];
 
 module.exports = {

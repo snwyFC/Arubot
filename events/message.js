@@ -33,7 +33,7 @@ module.exports = {
             if(message.member.roles.find(r => whitelist.includes(r.name))) {
                 return changeRaidChannel(message);
             } else {
-                return null;
+                return message.channel.send('You do not have required permissions to execute this command.');
             }
         }
     },

@@ -7,6 +7,7 @@ module.exports = (message) => {
 	  .setTimestamp()
 
 	  .addField('!enchant [text]', 'Searches for the enchant with the provided text and displays results')
+	  .addField('!wiki [text]', 'Spits back a search result for Mabinogi World Wiki');
 
     return message.channel.send({embed});
 };
