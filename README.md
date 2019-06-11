@@ -5,10 +5,14 @@
 ---
 
 ### Features 
-* Enchant lookup (partially finished)
+* Enchant lookup
+* Item search
+* Wiki search function
+* Raid timers
 
 --- 
 
 ## TO-DO
-* Finish Enchant lookup
-* Item lookup?
+* Clean up item search
+* Implement a database
+* Guild chat relay

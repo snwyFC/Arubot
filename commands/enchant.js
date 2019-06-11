@@ -159,6 +159,7 @@ module.exports = async (message) => {
 
     // Create RichEmbed
     const embed = new Discord.RichEmbed();
+    embed.setColor(0x1a1a66);
         
     if (data.total > 0 && data.total < 6 ) {
         embed.setAuthor(`Enchant search found ${data.total} result(s) for "${enchant}"`);

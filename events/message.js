@@ -1,6 +1,7 @@
 const ping = require('../commands/ping');
 const wiki = require('../commands/wiki.js');
 const enchant = require('../commands/enchant');
+const item = require('../commands/item.js');
 const help = require('../commands/help');
 const { changeRaidChannel } = require('../commands/timers');
 
@@ -21,6 +22,10 @@ module.exports = {
             return await enchant(message);
         }
 
+        if (message.content.startsWith('!item ')) {
+            return await item(message);
+        }
+
         if (message.content.startsWith('!wiki ')) {
             return await wiki(message);
         }
@@ -33,7 +38,7 @@ module.exports = {
             if(message.member.roles.find(r => whitelist.includes(r.name))) {
                 return changeRaidChannel(message);
             } else {
-                return null;
+                return message.channel.send('You do not have required permissions to execute this command.');
             }
         }
     },
