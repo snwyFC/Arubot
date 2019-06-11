@@ -1,4 +1,5 @@
 const CronJob = require('cron').CronJob;
+const moment = require('moment-timezone');
 
 let raidChannel = null;
 
@@ -40,5 +41,69 @@ module.exports = {
         } else {
             return message.reply('Channel not found!');
         }
+    },
+
+    setTimer: (message) => {
+        const testArray = message.content.split(' ');
+        const modifier = testArray[1];
+
+        // Validates message length
+        if(testArray.length < 5) {
+            return message.channel.send('invalid format, please try again');
+        }
+
+        // Validates date string
+        if(testArray[2].length != 5) {
+            return message.channel.send('invalid date format, please try again');
+        }
+
+        // Validates time format
+        if(testArray[3].length != 4) {
+            return message.channel.send('invalid time format, please try again');
+        }
+
+        const dateString = testArray[2].split('/');
+        let [ month, day ] = dateString;
+
+        const timeArray = testArray[3].split('');
+        const hour = timeArray.slice(0, 2).join('');
+        const minute = timeArray.slice(2).join('');
+
+        const timerMessage = testArray.slice(4).join(' ');
+
+        const currentMonth = moment().tz('America/Los_Angeles').month() + 1;
+        const currentDate = moment().tz('America/Los_Angeles').date();
+
+        month = parseInt(month);
+        day = parseInt(day);
+
+        // If month and day are the same as the current date, then omit them from cron calculation
+        // this is due to cron setting the current job to next year if it's the current date
+        if (month === currentMonth && day === currentDate) {
+            month = '*';
+            day = '*';
+        }
+
+        const cronString = `0 ${minute} ${hour} ${day} ${month} *`;
+
+        switch (modifier) {
+            case 'add': {
+                new CronJob(cronString, function() {
+                    raidChannel.send(timerMessage);
+
+                    this.stop();
+                }, null, true, 'America/Los_Angeles');
+
+                break;
+            }
+
+            default: {
+                message.channel.send('invalid modifier');
+
+                break;
+            }
+        }
+
+        return message.channel.send('Timer is set!');
     },
 }

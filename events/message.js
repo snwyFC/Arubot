@@ -3,7 +3,7 @@ const wiki = require('../commands/wiki.js');
 const enchant = require('../commands/enchant');
 const item = require('../commands/item.js');
 const help = require('../commands/help');
-const { changeRaidChannel } = require('../commands/timers');
+const { changeRaidChannel, setTimer } = require('../commands/timers');
 
 // TODO: Use database to store whitelist
 const whitelist = [
@@ -32,6 +32,10 @@ module.exports = {
 
         if (message.content.startsWith('!help')) {
             return help(message);
+        }
+
+        if (message.content.startsWith('!settimer')) {
+            return setTimer(message);
         }
 
         if (message.content.startsWith('!raid')) {
