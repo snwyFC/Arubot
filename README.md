@@ -9,6 +9,7 @@
 * Item search
 * Wiki search function
 * Raid timers
+* User set timers
 
 --- 
 

@@ -49,17 +49,17 @@ module.exports = {
 
         // Validates message length
         if(testArray.length < 5) {
-            return message.channel.send('invalid format, please try again');
+            return message.channel.send('Invalid format. Please try again.');
         }
 
         // Validates date string
         if(testArray[2].length != 5) {
-            return message.channel.send('invalid date format, please try again');
+            return message.channel.send('Invalid date format. Please try again.');
         }
 
         // Validates time format
         if(testArray[3].length != 4) {
-            return message.channel.send('invalid time format, please try again');
+            return message.channel.send('Invalid time format. Please try again.');
         }
 
         const dateString = testArray[2].split('/');
@@ -98,7 +98,7 @@ module.exports = {
             }
 
             default: {
-                message.channel.send('invalid modifier');
+                message.channel.send('Invalid modifier. Please try again.');
 
                 break;
             }

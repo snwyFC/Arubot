@@ -35,14 +35,18 @@ module.exports = {
         }
 
         if (message.content.startsWith('!settimer')) {
-            return setTimer(message);
+            if(message.member.roles.find(r => whitelist.includes(r.name))) {
+                return setTimer(message);
+            } else {
+                return message.channel.send('You do not have the required permissions to execute this command.')
+            }
         }
 
         if (message.content.startsWith('!raid')) {
             if(message.member.roles.find(r => whitelist.includes(r.name))) {
                 return changeRaidChannel(message);
             } else {
-                return message.channel.send('You do not have required permissions to execute this command.');
+                return message.channel.send('You do not have the required permissions to execute this command.');
             }
         }
     },

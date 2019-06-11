@@ -2,13 +2,16 @@
     "cSpell.ignoreWords": [
         "addbonusonalchemy",
         "botboi",
+        "sandworm",
         "setitemoption",
         "setparamonequip",
         "setpersonalize",
         "setsetitemeffectonequip",
+        "settimer",
         "skillinfo"
     ],
     "cSpell.words": [
-        "arubot"
+        "arubot",
+        "mabi"
     ]
 }
