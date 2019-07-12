@@ -26,6 +26,7 @@ const statNames = {
     'attmin': 'Min Damage',
     'attmax': 'Max Damage',
     'crit': 'Critical',
+    'critical' : 'Critical',
     'rate': 'Balance',
     'balance' : 'Balance',
     'wattmax' : 'Max Injury',
