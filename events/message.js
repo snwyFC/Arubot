@@ -3,12 +3,12 @@ const wiki = require('../commands/wiki.js');
 const enchant = require('../commands/enchant');
 const item = require('../commands/item.js');
 const help = require('../commands/help');
-const { changeRaidChannel } = require('../commands/timers');
+const { changeRaidChannel, setTimer } = require('../commands/timers');
 
 // TODO: Use database to store whitelist
 const whitelist = [
     'botboi',
-    'admin',
+    'Admin',
     'Officers',
 ];
 
@@ -34,11 +34,19 @@ module.exports = {
             return help(message);
         }
 
+        if (message.content.startsWith('!settimer')) {
+            if(message.member.roles.find(r => whitelist.includes(r.name))) {
+                return setTimer(message);
+            } else {
+                return message.channel.send('You do not have the required permissions to execute this command.')
+            }
+        }
+
         if (message.content.startsWith('!raid')) {
             if(message.member.roles.find(r => whitelist.includes(r.name))) {
                 return changeRaidChannel(message);
             } else {
-                return message.channel.send('You do not have required permissions to execute this command.');
+                return message.channel.send('You do not have the required permissions to execute this command.');
             }
         }
     },
