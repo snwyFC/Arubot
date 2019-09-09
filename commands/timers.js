@@ -3,6 +3,9 @@ const moment = require('moment-timezone');
 
 let raidChannel = null;
 
+const sylvanMessage = 'Sylvan Dragon is spawning for the next hour!';
+const mokkuTimes = 'Mokkurkalfi is spawning for the next hour!';
+
 const TIMERS = [
     ['0 0 11 * * *', 'Black Dragon is spawning for the next 15 minutes!'],
     ['0 0 19 * * *', 'Black Dragon is spawning for the next 15 minutes!'],
@@ -18,6 +21,38 @@ const TIMERS = [
     ['0 0 23 * * *', 'Sandworm is spawning for the next 30 minutes!'],
     ['0 0 15 * * *', 'Giant Alligator is spawning for the next 30 minutes!'],
     ['0 0 18 * * *', 'Giant Alligator is spawning for the next 30 minutes!'],
+
+    // Sylvan Times
+    // All Week
+    ['0 0 13 * * *', sylvanMessage],
+    ['0 0 17 * * *', sylvanMessage],
+    ['0 0 19 * * *', sylvanMessage],
+    ['0 0 21 * * *', sylvanMessage],
+    ['0 0 23 * * *', sylvanMessage],
+
+    // Weekday
+    ['0 0 12 * * 1-5', sylvanMessage],
+    ['0 0 16 * * 1-5', sylvanMessage],
+
+    // Weekend
+    ['0 0 11 * * 0,6', sylvanMessage],
+    ['0 0 15 * * 0,6', sylvanMessage],
+
+    // Mokku Times
+    // All Week
+    ['0 0 10 * * *', mokkuTimes],
+    ['0 0 14 * * *', mokkuTimes],
+    ['0 0 18 * * *', mokkuTimes],
+    ['0 0 20 * * *', mokkuTimes],
+    ['0 0 22 * * *', mokkuTimes],
+
+    // Weekday
+    ['0 0 11 * * 1-5', mokkuTimes],
+    ['0 0 15 * * 1-5', mokkuTimes],
+
+    // Weekend
+    ['0 0 12 * * 0,6', mokkuTimes],
+    ['0 0 16 * * 0,6', mokkuTimes],
 ];
 
 module.exports = {

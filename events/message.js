@@ -8,7 +8,7 @@ const { changeRaidChannel, setTimer } = require('../commands/timers');
 // TODO: Use database to store whitelist
 const whitelist = [
     'botboi',
-    'admin',
+    'Admin',
     'Officers',
 ];
 
